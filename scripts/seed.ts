@@ -132,7 +132,8 @@ async function main() {
       aboutHeading: "About the author",
       aboutText:
         "I write about how software actually gets built — the decisions, the trade-offs and the parts nobody puts in the conference talk.",
-      aboutImage: "https://picsum.photos/seed/author-portrait/400/400",
+      aboutImage: "/Profile.png",
+      logoUrl: "/SA_logo.png",
       twitterUrl: "https://twitter.com/stephenarthur",
       twitterHandle: "@stephenarthur",
       githubUrl: "https://github.com/stephenarthur",

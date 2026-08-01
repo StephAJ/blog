@@ -51,9 +51,11 @@ export async function Sidebar({ className }: { className?: string }) {
             <Image
               src={settings.aboutImage}
               alt={settings.siteName}
-              width={88}
-              height={88}
-              className="mx-auto size-22 rounded-full object-cover"
+              width={200}
+              height={200}
+              // The portrait is transparent-backed, so give it a tinted disc
+              // to sit on rather than letting the page show through.
+              className="mx-auto size-24 rounded-full bg-brand-50 object-cover object-top dark:bg-brand-950/40"
             />
           )}
           <h2 className="mt-4 text-base font-bold">{settings.aboutHeading}</h2>

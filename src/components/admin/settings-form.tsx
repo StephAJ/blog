@@ -18,7 +18,7 @@ const SECTIONS = [
   { id: "seo", label: "SEO" },
   { id: "analytics", label: "Analytics" },
   { id: "adsense", label: "AdSense" },
-  { id: "engagement", label: "Comments & newsletter" },
+  { id: "engagement", label: "Homepage & engagement" },
 ];
 
 export function SettingsForm({ settings }: { settings: Settings }) {
@@ -429,8 +429,14 @@ export function SettingsForm({ settings }: { settings: Settings }) {
         </Card>
 
         {/* ----------------------------------------------- Engagement */}
-        <Card title="Comments & newsletter">
+        <Card title="Homepage & engagement">
           <div id="engagement" className="space-y-3 scroll-mt-6">
+            <Toggle
+              name="trendingEnabled"
+              label="Show the trending strip"
+              hint="The ranked bar of most-read posts across the top of the feed."
+              defaultChecked={settings.trendingEnabled}
+            />
             <Toggle
               name="commentsEnabled"
               label="Enable comments"

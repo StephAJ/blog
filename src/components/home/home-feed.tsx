@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AdSlot } from "@/components/ads/ad-slot";
@@ -9,14 +8,8 @@ import { TrendingStrip } from "@/components/post/trending-strip";
 import type { CardPost } from "@/components/post/types";
 import { SectionHeading } from "@/components/section-heading";
 import { Sidebar } from "@/components/sidebar/sidebar";
-import {
-  getCategoriesWithCounts,
-  getFeaturedPosts,
-  getPopularPosts,
-  getPosts,
-} from "@/db/queries";
+import { getFeaturedPosts, getPopularPosts, getPosts } from "@/db/queries";
 import { getSettings } from "@/lib/settings";
-import { hexToRgba } from "@/lib/utils";
 
 export async function HomeFeed({ page }: { page: number }) {
   const settings = await getSettings();
@@ -38,7 +31,7 @@ export async function HomeFeed({ page }: { page: number }) {
 
   return (
     <>
-      {isFirstPage && <TrendingStrip posts={trending as CardPost[]} />}
+      {settings.trendingEnabled && <TrendingStrip posts={trending as CardPost[]} />}
 
       <div className="container-page py-10 lg:py-14">
         {isFirstPage && featured.length > 0 && (
@@ -86,56 +79,12 @@ export async function HomeFeed({ page }: { page: number }) {
             />
           </div>
 
-          <Sidebar className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start" />
+          {/* Deliberately not sticky: the sidebar is far taller than a
+              viewport, and a sticky element that tall makes its own lower
+              half impossible to scroll to. */}
+          <Sidebar className="lg:col-span-4" />
         </div>
-
-        {isFirstPage && <CategoryShowcase />}
       </div>
     </>
-  );
-}
-
-async function CategoryShowcase() {
-  const categories = (await getCategoriesWithCounts()).filter((c) => c.count > 0);
-  if (categories.length === 0) return null;
-
-  return (
-    <section className="mt-16 lg:mt-20">
-      <SectionHeading
-        title="Browse by topic"
-        description="Nine subjects, one archive. Pick a thread and pull."
-      />
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {categories.map((category) => (
-          <li key={category.slug}>
-            <Link
-              href={`/category/${category.slug}`}
-              className="card-hover group flex h-full flex-col rounded-xl border hairline surface p-5"
-              style={{ borderTop: `3px solid ${category.color}` }}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="font-bold transition group-hover:text-accent">
-                  {category.name}
-                </h3>
-                <span
-                  className="rounded-full px-2.5 py-1 text-xs font-semibold"
-                  style={{
-                    backgroundColor: hexToRgba(category.color, 0.13),
-                    color: category.color,
-                  }}
-                >
-                  {category.count}
-                </span>
-              </div>
-              {category.description && (
-                <p className="clamp-2 mt-2 text-sm leading-relaxed text-body">
-                  {category.description}
-                </p>
-              )}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }

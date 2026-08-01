@@ -262,11 +262,14 @@ async function ArticleView({
             </div>
           </div>
 
-          <div className="lg:col-span-4">
-            <div className="space-y-6 lg:sticky lg:top-28">
+          <div className="space-y-6 lg:col-span-4">
+            {/* Only the table of contents is sticky — it is short enough to
+                fit. Sticking the whole column would put the bottom of the
+                sidebar permanently out of scroll reach. */}
+            <div className="lg:sticky lg:top-28">
               <TableOfContents headings={headings} />
-              <Sidebar />
             </div>
+            <Sidebar />
           </div>
         </div>
       </div>

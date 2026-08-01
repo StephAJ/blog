@@ -62,6 +62,7 @@ const FIELDS = Object.keys(schema.shape) as (keyof typeof schema.shape)[];
 const CHECKBOXES = [
   "adsenseEnabled",
   "adsenseAutoAds",
+  "trendingEnabled",
   "commentsEnabled",
   "commentsAutoApprove",
   "newsletterEnabled",

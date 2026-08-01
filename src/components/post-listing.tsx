@@ -72,7 +72,7 @@ export function PostListing({
           />
         </div>
 
-        <Sidebar className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start" />
+        <Sidebar className="lg:col-span-4" />
       </div>
     </div>
   );

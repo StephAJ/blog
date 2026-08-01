@@ -7,7 +7,6 @@ import { getSettings } from "@/lib/settings";
 
 import { MobileNav } from "./mobile-nav";
 import { SearchButton } from "./search-button";
-import { SocialLinks } from "./social-links";
 import { ThemeToggle } from "./theme-toggle";
 
 const PRIMARY_NAV_COUNT = 4;
@@ -25,44 +24,31 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b hairline bg-[var(--surface-page)]/85 backdrop-blur-md">
-      {/* Utility strip */}
-      <div className="hidden border-b hairline lg:block">
-        <div className="container-page flex h-9 items-center justify-between">
-          <p className="text-xs text-faint">{settings.tagline}</p>
-          <SocialLinks
-            settings={settings}
-            size={14}
-            itemClassName="size-7"
-            className="-mr-1.5"
-          />
-        </div>
-      </div>
-
-      {/* Main bar */}
       <div className="container-page flex h-16 items-center justify-between gap-6 lg:h-[4.5rem]">
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
           {settings.logoUrl ? (
             <Image
               src={settings.logoUrl}
-              alt={settings.siteName}
-              width={160}
-              height={36}
-              className="h-8 w-auto object-contain"
+              alt=""
+              width={200}
+              height={200}
+              // The supplied mark is white on transparent, so it would vanish
+              // on the light canvas — invert it there, leave it in dark mode.
+              className="size-10 object-contain invert dark:invert-0"
               priority
+              unoptimized
             />
           ) : (
-            <>
-              <span
-                aria-hidden
-                className="grid size-9 place-items-center rounded-lg bg-brand-600 font-bold text-white"
-              >
-                {settings.siteName.charAt(0)}
-              </span>
-              <span className="text-lg font-extrabold tracking-tight">
-                {settings.siteName}
-              </span>
-            </>
+            <span
+              aria-hidden
+              className="grid size-9 place-items-center rounded-lg bg-brand-600 font-bold text-white"
+            >
+              {settings.siteName.charAt(0)}
+            </span>
           )}
+          <span className="text-lg font-extrabold tracking-tight">
+            {settings.siteName}
+          </span>
         </Link>
 
         <nav aria-label="Primary" className="hidden lg:block">

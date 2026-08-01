@@ -1,8 +1,27 @@
 import type { NextConfig } from "next";
 
+/**
+ * Behind a TLS-terminating reverse proxy, Next compares the browser's Origin
+ * header against the forwarded host before it will run a Server Action. If the
+ * proxy rewrites either one the action is rejected and the admin forms break,
+ * so trust the configured public origin explicitly.
+ */
+const siteHost = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").host;
+  } catch {
+    return "localhost:3000";
+  }
+})();
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
+  experimental: {
+    serverActions: {
+      allowedOrigins: [siteHost, "localhost:3000"],
+    },
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

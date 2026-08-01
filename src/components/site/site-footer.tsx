@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { AdSlot } from "@/components/ads/ad-slot";
@@ -23,12 +24,23 @@ export async function SiteFooter() {
       <div className="container-page grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-5">
           <Link href="/" className="flex items-center gap-2.5">
-            <span
-              aria-hidden
-              className="grid size-9 place-items-center rounded-lg bg-brand-600 font-bold text-white"
-            >
-              {settings.siteName.charAt(0)}
-            </span>
+            {settings.logoUrl ? (
+              <Image
+                src={settings.logoUrl}
+                alt=""
+                width={200}
+                height={200}
+                className="size-10 object-contain invert dark:invert-0"
+                unoptimized
+              />
+            ) : (
+              <span
+                aria-hidden
+                className="grid size-9 place-items-center rounded-lg bg-brand-600 font-bold text-white"
+              >
+                {settings.siteName.charAt(0)}
+              </span>
+            )}
             <span className="text-lg font-extrabold tracking-tight">
               {settings.siteName}
             </span>

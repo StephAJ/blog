@@ -289,6 +289,9 @@ export const settings = sqliteTable("settings", {
   adsTxt: text("ads_txt"),
 
   /* Behaviour */
+  trendingEnabled: integer("trending_enabled", { mode: "boolean" })
+    .notNull()
+    .default(true),
   commentsEnabled: integer("comments_enabled", { mode: "boolean" })
     .notNull()
     .default(true),
