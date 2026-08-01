@@ -52,7 +52,9 @@ export default async function TagsPage() {
                     <input type="hidden" name="id" value={tag.id} />
                     <SubmitButton
                       variant="ghost"
-                      className="size-6 rounded-full p-0 hover:bg-red-500 hover:text-white"
+                      iconOnly
+                      title={`Delete ${tag.name}`}
+                      className="size-6 rounded-full hover:bg-red-500 hover:text-white"
                       confirm={`Delete the tag “${tag.name}”?`}
                     >
                       <Trash2 size={12} />

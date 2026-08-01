@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { AdminNav } from "@/components/admin/admin-nav";
 import { getAdminStats } from "@/db/queries";
-import { getSession } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { initials } from "@/lib/utils";
 
@@ -21,9 +21,17 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-  if (!session) redirect("/admin/login");
+  // The cookie only proves the token was signed by us — the account behind it
+  // can still be gone (deleted, or the database reseeded underneath a live
+  // session). Verify the row exists here so every admin page agrees, instead
+  // of each one failing differently.
+  //
+  // The cookie is cleared by the login page rather than here: a Server
+  // Component render cannot mutate cookies.
+  const user = await getCurrentUser();
+  if (!user) redirect("/admin/login");
 
+  const session = { name: user.name, email: user.email };
   const [settings, stats] = await Promise.all([getSettings(), getAdminStats()]);
 
   return (

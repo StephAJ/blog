@@ -14,6 +14,8 @@ export function SubmitButton({
   value,
   formAction,
   confirm,
+  iconOnly = false,
+  title,
 }: {
   children: React.ReactNode;
   variant?: "primary" | "secondary" | "danger" | "ghost";
@@ -23,6 +25,13 @@ export function SubmitButton({
   value?: string;
   formAction?: (formData: FormData) => void | Promise<void>;
   confirm?: string;
+  /**
+   * Square button holding just an icon. This has to be a prop rather than a
+   * `p-0` in `className`, because Tailwind emits `.px-4` after `.p-0` and the
+   * later rule wins — which silently squeezed the icon to zero width.
+   */
+  iconOnly?: boolean;
+  title?: string;
 }) {
   const { pending } = useFormStatus();
 
@@ -48,8 +57,10 @@ export function SubmitButton({
             }
           : undefined
       }
+      title={title}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:opacity-60",
+        "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition disabled:opacity-60",
+        iconOnly ? "size-9" : "px-4 py-2.5",
         variants[variant],
         className,
       )}

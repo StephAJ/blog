@@ -137,7 +137,8 @@
   h2,
   h3,
   h4 {
-    letter-spacing: -0.022em;
+    letter-spacing: var(--heading-tracking, -0.022em);
+    font-weight: var(--heading-weight, 800);
     text-wrap: balance;
   }
 
@@ -261,25 +262,34 @@
   --tw-prose-td-borders: var(--border-subtle);
 
   font-family: var(--font-serif);
-  font-size: 1.1875rem;
-  line-height: 1.78;
+  font-size: var(--article-size, 1.1875rem);
+  line-height: var(--article-leading, 1.78);
 }
 
 .prose-article :is(h2, h3, h4) {
   font-family: var(--font-sans);
+  font-weight: var(--heading-weight, 700);
   scroll-margin-top: 7rem;
 }
 
 .prose-article h2 {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--h2-size, 1.75rem);
   margin-top: 2.5em;
   margin-bottom: 0.8em;
 }
 
 .prose-article h3 {
-  font-size: 1.3125rem;
-  font-weight: 700;
+  font-size: var(--h3-size, 1.3125rem);
+}
+
+.prose-article h4 {
+  font-size: var(--h4-size, 1.125rem);
+}
+
+/* Post and page titles follow the configured h1 size. */
+.article-title {
+  font-size: var(--h1-size, 2.75rem);
+  line-height: 1.12;
 }
 
 .prose-article a {

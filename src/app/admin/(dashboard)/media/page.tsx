@@ -55,7 +55,9 @@ export default async function MediaPage() {
                     <input type="hidden" name="id" value={item.id} />
                     <SubmitButton
                       variant="ghost"
-                      className="size-8 rounded-lg bg-ink-950/70 p-0 text-white hover:bg-red-600 hover:text-white"
+                      iconOnly
+                      title="Delete image"
+                      className="size-8 rounded-lg bg-ink-950/70 text-white hover:bg-red-600 hover:text-white"
                       confirm="Remove this image from the library? The file stays on disk."
                     >
                       <Trash2 size={14} />

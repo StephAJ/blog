@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import Image from "next/image";
+import { SmartImage as Image } from "@/components/smart-image";
 import Link from "next/link";
 
 import { CategoryBadge } from "./category-badge";

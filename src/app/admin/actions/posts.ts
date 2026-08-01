@@ -9,7 +9,10 @@ import { db } from "@/db";
 import { postTags, posts, tags } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { getSettings } from "@/lib/settings";
 import { makeExcerpt, readingMinutes, slugify, stripHtml } from "@/lib/utils";
+
+import { notifySubscribersOfPost } from "./email";
 
 export type ActionState = { error?: string; message?: string };
 
@@ -154,12 +157,14 @@ export async function savePost(
   };
 
   let postId = data.id;
+  let wasPublished = false;
 
   if (postId) {
     const previous = await db.query.posts.findFirst({
       where: eq(posts.id, postId),
-      columns: { slug: true },
+      columns: { slug: true, status: true },
     });
+    wasPublished = previous?.status === "published";
     await db.update(posts).set(values).where(eq(posts.id, postId));
     if (previous && previous.slug !== slug) revalidatePath(`/${previous.slug}`);
   } else {
@@ -175,8 +180,34 @@ export async function savePost(
   revalidatePath("/", "layout");
   revalidatePath(`/${slug}`);
 
+  const announcement = await maybeAnnounce(postId, wasPublished, data.status);
+
   if (!data.id) redirect(`/admin/posts/${postId}?saved=1`);
-  return { message: "Saved." };
+  return { message: `Saved.${announcement}` };
+}
+
+/**
+ * Fires the subscriber announcement the first time a post becomes published,
+ * and only when the site owner has opted in. Never blocks the save — a mail
+ * failure is reported, not thrown.
+ */
+async function maybeAnnounce(
+  postId: number,
+  wasPublished: boolean,
+  status: "draft" | "published",
+) {
+  if (status !== "published" || wasPublished) return "";
+
+  const settings = await getSettings();
+  if (!settings.notifyOnPublish) return "";
+
+  try {
+    const result = await notifySubscribersOfPost(postId);
+    if ("skipped" in result) return "";
+    return ` Emailed ${result.sent} subscriber${result.sent === 1 ? "" : "s"}.`;
+  } catch {
+    return " (Post saved, but the subscriber email failed to send.)";
+  }
 }
 
 export async function deletePost(formData: FormData) {
@@ -222,4 +253,6 @@ export async function togglePostStatus(formData: FormData) {
   revalidatePath("/", "layout");
   revalidatePath(`/${post.slug}`);
   revalidatePath("/admin/posts");
+
+  await maybeAnnounce(id, post.status === "published", status);
 }

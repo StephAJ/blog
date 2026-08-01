@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getSession } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 
 import { LoginForm } from "./login-form";
@@ -17,7 +17,10 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
-  if (await getSession()) redirect("/admin");
+  // Checks the account still exists, not merely that a signed cookie is
+  // present — otherwise a session whose user was deleted would bounce forever
+  // between here and the dashboard.
+  if (await getCurrentUser()) redirect("/admin");
 
   const { next } = await searchParams;
   const settings = await getSettings();

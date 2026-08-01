@@ -38,6 +38,28 @@ const schema = z.object({
   githubUrl: text(200),
   contactEmail: text(200),
 
+  brandColor: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Theme colour must look like #cf4227"),
+  fontHeading: z.string().trim().max(60),
+  fontBody: z.string().trim().max(60),
+  headingWeight: z.coerce.number().int().min(400).max(900),
+  headingTracking: z.string().trim().max(20),
+  bodyFontSize: z.coerce.number().min(0.9).max(1.6),
+  bodyLineHeight: z.coerce.number().min(1.3).max(2.2),
+  h1Size: z.coerce.number().min(1.5).max(5),
+  h2Size: z.coerce.number().min(1.1).max(3.5),
+  h3Size: z.coerce.number().min(1).max(3),
+  h4Size: z.coerce.number().min(0.9).max(2.5),
+
+  smtpHost: text(200),
+  smtpPort: z.coerce.number().int().min(1).max(65535),
+  smtpUser: text(200),
+  smtpPassword: text(400),
+  smtpFromName: text(120),
+  smtpFromEmail: text(200),
+
   metaTitleTemplate: z.string().trim().max(120),
   googleSiteVerification: text(200),
   bingSiteVerification: text(200),
@@ -66,7 +88,32 @@ const CHECKBOXES = [
   "commentsEnabled",
   "commentsAutoApprove",
   "newsletterEnabled",
+  "smtpSecure",
+  "notifyOnPublish",
 ] as const;
+
+/** Fields that must never be blanked out by an empty form value. */
+const REQUIRED_FIELDS = new Set<string>([
+  "siteName",
+  "siteUrl",
+  "brandColor",
+  "fontHeading",
+  "fontBody",
+  "headingWeight",
+  "headingTracking",
+  "bodyFontSize",
+  "bodyLineHeight",
+  "h1Size",
+  "h2Size",
+  "h3Size",
+  "h4Size",
+  "smtpPort",
+  "postsPerPage",
+  "metaTitleTemplate",
+  "tagline",
+  "description",
+  "aboutHeading",
+]);
 
 export async function saveSettings(
   _prev: ActionState,
@@ -86,10 +133,15 @@ export async function saveSettings(
 
   const values: Record<string, unknown> = { ...parsed.data, updatedAt: new Date() };
   for (const key of FIELDS) {
-    if (values[key] === undefined) values[key] = null;
+    // Optional fields clear to NULL when emptied; required ones keep whatever
+    // the schema validated, so a blank input can never null a NOT NULL column.
+    if (values[key] === undefined && !REQUIRED_FIELDS.has(key)) values[key] = null;
   }
-  values.siteName = parsed.data.siteName;
   values.siteUrl = parsed.data.siteUrl.replace(/\/$/, "");
+
+  // An empty SMTP password means "leave the stored one alone", so the admin
+  // can edit other settings without retyping the secret every time.
+  if (!formData.get("smtpPassword")) delete values.smtpPassword;
 
   for (const key of CHECKBOXES) {
     values[key] = formData.get(key) === "on";

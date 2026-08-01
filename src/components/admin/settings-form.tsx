@@ -1,11 +1,13 @@
 "use client";
 
 import { AlertCircle, Check, Save } from "lucide-react";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { saveSettings } from "@/app/admin/actions/settings";
 import type { ActionState } from "@/app/admin/actions/posts";
 import type { Settings } from "@/db/schema";
+import { BODY_FONTS, HEADING_FONTS } from "@/lib/fonts";
+import { buildTheme } from "@/lib/theme";
 
 import { ImagePicker } from "./image-picker";
 import { SubmitButton } from "./submit-button";
@@ -13,18 +15,28 @@ import { Card, Field, Toggle, inputClass } from "./ui";
 
 const SECTIONS = [
   { id: "identity", label: "Site identity" },
+  { id: "appearance", label: "Theme & colour" },
+  { id: "typography", label: "Typography" },
   { id: "about", label: "About box" },
   { id: "social", label: "Social links" },
   { id: "seo", label: "SEO" },
   { id: "analytics", label: "Analytics" },
   { id: "adsense", label: "AdSense" },
+  { id: "email", label: "Email & SMTP" },
   { id: "engagement", label: "Homepage & engagement" },
+];
+
+const PRESET_COLOURS = [
+  "#cf4227", "#2563eb", "#0f766e", "#7c3aed",
+  "#db2777", "#16a34a", "#ea580c", "#0891b2",
 ];
 
 export function SettingsForm({ settings }: { settings: Settings }) {
   const [state, formAction] = useActionState<ActionState, FormData>(saveSettings, {});
+  const [brandColor, setBrandColor] = useState(settings.brandColor);
 
   const value = (key: keyof Settings) => (settings[key] as string | null) ?? "";
+  const theme = buildTheme(brandColor);
 
   return (
     <form action={formAction} className="grid gap-6 xl:grid-cols-[14rem_1fr]">
@@ -150,6 +162,216 @@ export function SettingsForm({ settings }: { settings: Settings }) {
                 className={inputClass}
               />
             </Field>
+          </div>
+        </Card>
+
+        {/* ----------------------------------------------- Appearance */}
+        <Card
+          title="Theme & colour"
+          description="One colour drives buttons, links, badges and accents across the whole site."
+        >
+          <div id="appearance" className="scroll-mt-6 space-y-5">
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="color"
+                name="brandColor"
+                value={brandColor}
+                onChange={(event) => setBrandColor(event.target.value)}
+                aria-label="Theme colour"
+                className="size-12 shrink-0 cursor-pointer rounded-lg border hairline bg-transparent"
+              />
+              <input
+                value={brandColor}
+                onChange={(event) => setBrandColor(event.target.value)}
+                aria-label="Theme colour hex"
+                className={`${inputClass} w-32 font-mono text-xs uppercase`}
+              />
+              <div className="flex flex-wrap gap-1.5">
+                {PRESET_COLOURS.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setBrandColor(preset)}
+                    aria-label={`Use ${preset}`}
+                    style={{ backgroundColor: preset }}
+                    data-active={brandColor.toLowerCase() === preset}
+                    className="size-7 rounded-full ring-offset-2 ring-offset-[var(--surface-card)] transition hover:scale-110 data-[active=true]:ring-2"
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-lg border hairline p-4">
+              <p className="eyebrow mb-3 text-faint">Live preview</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <span
+                  className="rounded-lg px-4 py-2.5 text-sm font-semibold"
+                  style={{ backgroundColor: theme.scale["600"], color: theme.onBrand }}
+                >
+                  Primary button
+                </span>
+                <span
+                  className="rounded-full px-2.5 py-1 text-[0.6875rem] font-bold tracking-[0.14em] uppercase"
+                  style={{
+                    backgroundColor: theme.scale["100"],
+                    color: theme.accentLight,
+                  }}
+                >
+                  Category
+                </span>
+                <span
+                  className="text-sm font-semibold underline"
+                  style={{ color: theme.accentLight }}
+                >
+                  A link in light mode
+                </span>
+                <span
+                  className="rounded-lg px-3 py-1.5 text-sm font-semibold"
+                  style={{ backgroundColor: "#100f0e", color: theme.accentDark }}
+                >
+                  A link in dark mode
+                </span>
+              </div>
+              <p className="mt-3 text-xs text-faint">
+                Link tones are darkened or lightened automatically so they stay
+                readable on both backgrounds, whatever colour you pick.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-1">
+              {Object.entries(theme.scale).map(([stop, hex]) => (
+                <span key={stop} className="text-center">
+                  <span
+                    className="block size-9 rounded-md border hairline"
+                    style={{ backgroundColor: hex }}
+                    title={`brand-${stop} ${hex}`}
+                  />
+                  <span className="mt-1 block text-[0.625rem] text-faint">{stop}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* ----------------------------------------------- Typography */}
+        <Card
+          title="Typography"
+          description="Applies to every post and page. Sizes are in rem — 1rem is 16px."
+        >
+          <div id="typography" className="grid gap-4 scroll-mt-6 sm:grid-cols-2">
+            <Field
+              label="Heading font"
+              htmlFor="fontHeading"
+              hint="Used for the site name, headings and UI."
+            >
+              <select
+                id="fontHeading"
+                name="fontHeading"
+                defaultValue={settings.fontHeading}
+                className={inputClass}
+              >
+                {HEADING_FONTS.map((font) => (
+                  <option key={font} value={font}>
+                    {font}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field
+              label="Body font"
+              htmlFor="fontBody"
+              hint="Used for article text."
+            >
+              <select
+                id="fontBody"
+                name="fontBody"
+                defaultValue={settings.fontBody}
+                className={inputClass}
+              >
+                {BODY_FONTS.map((font) => (
+                  <option key={font} value={font}>
+                    {font}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Heading weight" htmlFor="headingWeight">
+              <select
+                id="headingWeight"
+                name="headingWeight"
+                defaultValue={settings.headingWeight}
+                className={inputClass}
+              >
+                {[400, 500, 600, 700, 800, 900].map((weight) => (
+                  <option key={weight} value={weight}>
+                    {weight}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field
+              label="Heading letter spacing"
+              htmlFor="headingTracking"
+              hint="e.g. -0.022em for tight, 0 for neutral."
+            >
+              <input
+                id="headingTracking"
+                name="headingTracking"
+                defaultValue={settings.headingTracking}
+                className={`${inputClass} font-mono text-xs`}
+              />
+            </Field>
+
+            <Field label="Body size (rem)" htmlFor="bodyFontSize" hint="0.9 – 1.6">
+              <input
+                id="bodyFontSize"
+                name="bodyFontSize"
+                type="number"
+                step="any"
+                min={0.9}
+                max={1.6}
+                defaultValue={settings.bodyFontSize}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Body line height" htmlFor="bodyLineHeight" hint="1.3 – 2.2">
+              <input
+                id="bodyLineHeight"
+                name="bodyLineHeight"
+                type="number"
+                step="any"
+                min={1.3}
+                max={2.2}
+                defaultValue={settings.bodyLineHeight}
+                className={inputClass}
+              />
+            </Field>
+
+            {(
+              [
+                ["h1Size", "H1 / post title (rem)", 1.5, 5],
+                ["h2Size", "H2 (rem)", 1.1, 3.5],
+                ["h3Size", "H3 (rem)", 1, 3],
+                ["h4Size", "H4 (rem)", 0.9, 2.5],
+              ] as const
+            ).map(([key, label, min, max]) => (
+              <Field key={key} label={label} htmlFor={key}>
+                <input
+                  id={key}
+                  name={key}
+                  type="number"
+                  step="any"
+                  min={min}
+                  max={max}
+                  defaultValue={settings[key] as number}
+                  className={inputClass}
+                />
+              </Field>
+            ))}
           </div>
         </Card>
 
@@ -425,6 +647,107 @@ export function SettingsForm({ settings }: { settings: Settings }) {
                 className={`${inputClass} resize-y font-mono text-xs`}
               />
             </Field>
+          </div>
+        </Card>
+
+        {/* ---------------------------------------------------- Email */}
+        <Card
+          title="Email & SMTP"
+          description="Needed to email subscribers. Use an app password, never your account password."
+        >
+          <div id="email" className="grid gap-4 scroll-mt-6 sm:grid-cols-2">
+            <Field
+              label="SMTP host"
+              htmlFor="smtpHost"
+              hint="e.g. smtp.gmail.com, smtp.resend.com"
+            >
+              <input
+                id="smtpHost"
+                name="smtpHost"
+                defaultValue={value("smtpHost")}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Port" htmlFor="smtpPort" hint="587 for STARTTLS, 465 for TLS.">
+              <input
+                id="smtpPort"
+                name="smtpPort"
+                type="number"
+                min={1}
+                max={65535}
+                defaultValue={settings.smtpPort}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Username" htmlFor="smtpUser">
+              <input
+                id="smtpUser"
+                name="smtpUser"
+                autoComplete="off"
+                defaultValue={value("smtpUser")}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field
+              label="Password"
+              htmlFor="smtpPassword"
+              hint={
+                settings.smtpPassword
+                  ? "Saved. Leave blank to keep the current password."
+                  : "Stored in the database — restrict access to the server."
+              }
+            >
+              <input
+                id="smtpPassword"
+                name="smtpPassword"
+                type="password"
+                autoComplete="new-password"
+                placeholder={settings.smtpPassword ? "••••••••••" : ""}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="From name" htmlFor="smtpFromName">
+              <input
+                id="smtpFromName"
+                name="smtpFromName"
+                defaultValue={value("smtpFromName")}
+                placeholder={settings.siteName}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field
+              label="From address"
+              htmlFor="smtpFromEmail"
+              hint="Must be an address the SMTP account is allowed to send as."
+            >
+              <input
+                id="smtpFromEmail"
+                name="smtpFromEmail"
+                type="email"
+                defaultValue={value("smtpFromEmail")}
+                className={inputClass}
+              />
+            </Field>
+
+            <div className="space-y-3 sm:col-span-2">
+              <Toggle
+                name="smtpSecure"
+                label="Force implicit TLS"
+                hint="Leave off for port 587. Port 465 turns this on automatically."
+                defaultChecked={settings.smtpSecure}
+              />
+              <Toggle
+                name="notifyOnPublish"
+                label="Email subscribers when a post is published"
+                hint="Sends once, the first time a post goes live. Never re-sends on edit."
+                defaultChecked={settings.notifyOnPublish}
+              />
+            </div>
           </div>
         </Card>
 

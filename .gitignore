@@ -19,3 +19,4 @@ next-env.d.ts
 /data/*.db-wal
 /public/uploads/*
 !/public/uploads/.gitkeep
+!/public/uploads/demo/

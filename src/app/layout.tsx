@@ -3,6 +3,7 @@ import { JetBrains_Mono, Plus_Jakarta_Sans, Source_Serif_4 } from "next/font/goo
 
 import { Analytics } from "@/components/analytics";
 import { AdSenseScript } from "@/components/ads/adsense-script";
+import { Appearance } from "@/components/site/appearance";
 import { ThemeProvider } from "@/components/theme-provider";
 import { getSettings, siteUrl } from "@/lib/settings";
 
@@ -102,6 +103,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${jakarta.variable} ${sourceSerif.variable} ${mono.variable}`}
     >
+      <head>
+        <Appearance />
+      </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
         <Analytics />

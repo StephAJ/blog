@@ -10,6 +10,7 @@ const { db } = await import("../src/db");
 const {
   categories,
   comments,
+  media,
   pages,
   postTags,
   posts,
@@ -27,6 +28,7 @@ const {
   demoSubscribers,
   demoTags,
 } = await import("./demo-content");
+const { generateCovers } = await import("./generate-covers");
 
 const force = process.argv.includes("--force");
 
@@ -83,6 +85,7 @@ async function main() {
     await db.delete(categories);
     await db.delete(pages);
     await db.delete(subscribers);
+    await db.delete(media);
     await db.delete(users);
     await db.delete(settings);
   }
@@ -103,12 +106,13 @@ async function main() {
       slug: slugify(adminName),
       role: "admin",
       bio: "Writing about technology, design and the systems that connect them. Ex-engineer, permanent generalist, occasional photographer.",
+      avatarUrl: "/Profile.webp",
       twitter: "stephenarthur",
       website: "https://stephenarthur.org",
     })
     .onConflictDoUpdate({
       target: users.email,
-      set: { name: adminName },
+      set: { name: adminName, avatarUrl: "/Profile.webp" },
     })
     .returning();
 
@@ -132,7 +136,7 @@ async function main() {
       aboutHeading: "About the author",
       aboutText:
         "I write about how software actually gets built — the decisions, the trade-offs and the parts nobody puts in the conference talk.",
-      aboutImage: "/Profile.png",
+      aboutImage: "/Profile.webp",
       logoUrl: "/SA_logo.png",
       twitterUrl: "https://twitter.com/stephenarthur",
       twitterHandle: "@stephenarthur",
@@ -183,6 +187,32 @@ async function main() {
   /* ---------------------------------------------------------------- */
   const postIds = new Map<string, number>();
 
+  // Covers are rendered to disk so the site never depends on an outbound
+  // request to display a demo image.
+  const categoryColors = new Map(demoCategories.map((c) => [c.name, c.color]));
+  const coverUrls = await generateCovers(
+    demoPosts.map((p) => ({
+      slug: p.slug,
+      color: categoryColors.get(p.category) ?? "#cf4227",
+    })),
+  );
+
+  // Register them in the media library so the picker has something in it.
+  for (const cover of coverUrls.values()) {
+    await db
+      .insert(media)
+      .values({
+        url: cover.url,
+        filename: cover.filename,
+        mimeType: "image/webp",
+        width: cover.width,
+        height: cover.height,
+        size: cover.size,
+      })
+      .onConflictDoNothing();
+  }
+  console.log(`✓ ${coverUrls.size} cover images generated and added to the library`);
+
   for (const demo of demoPosts) {
     const html = sectionsToHtml(demo.sections);
     const text = stripHtml(html);
@@ -196,8 +226,8 @@ async function main() {
         excerpt: demo.excerpt,
         content: html,
         contentText: text,
-        coverImage: demo.cover,
-        coverAlt: demo.title,
+        coverImage: coverUrls.get(demo.slug)?.url ?? demo.cover,
+        coverAlt: null,
         categoryId: categoryIds.get(demo.category) ?? null,
         authorId: admin.id,
         status: "published",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { SmartImage as Image } from "@/components/smart-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -165,7 +165,7 @@ async function ArticleView({
                 {post.category && (
                   <CategoryBadge category={post.category} variant="solid" />
                 )}
-                <h1 className="mt-4 text-3xl leading-[1.12] font-extrabold sm:text-4xl lg:text-[2.75rem]">
+                <h1 className="article-title mt-4 text-3xl leading-[1.12] sm:text-4xl lg:text-[length:var(--h1-size)]">
                   {post.title}
                 </h1>
                 {post.excerpt && (

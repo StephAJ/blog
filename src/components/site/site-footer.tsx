@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SmartImage as Image } from "@/components/smart-image";
 import Link from "next/link";
 
 import { AdSlot } from "@/components/ads/ad-slot";

@@ -3,6 +3,7 @@ import {
   index,
   integer,
   primaryKey,
+  real,
   sqliteTable,
   text,
   uniqueIndex,
@@ -112,6 +113,9 @@ export const posts = sqliteTable(
     canonicalUrl: text("canonical_url"),
     noindex: integer("noindex", { mode: "boolean" }).notNull().default(false),
 
+    /** Set once subscribers have been emailed, so a post is never sent twice. */
+    notifiedAt: integer("notified_at", { mode: "timestamp" }),
+
     publishedAt: integer("published_at", { mode: "timestamp" }),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
@@ -205,12 +209,28 @@ export const subscribers = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     email: text("email").notNull(),
     source: text("source").notNull().default("sidebar"),
+    /** Random secret so unsubscribe links need no login and cannot be guessed. */
+    unsubscribeToken: text("unsubscribe_token"),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(now),
   },
   (t) => [uniqueIndex("subscribers_email_idx").on(t.email)],
 );
+
+/** Record of every broadcast sent, so the admin has an audit trail. */
+export const broadcasts = sqliteTable("broadcasts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  kind: text("kind", { enum: ["manual", "new-post"] })
+    .notNull()
+    .default("manual"),
+  postId: integer("post_id"),
+  sentCount: integer("sent_count").notNull().default(0),
+  failedCount: integer("failed_count").notNull().default(0),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(now),
+});
 
 /* ------------------------------------------------------------------ */
 /* Media library                                                       */
@@ -261,6 +281,19 @@ export const settings = sqliteTable("settings", {
   githubUrl: text("github_url"),
   contactEmail: text("contact_email"),
 
+  /* Appearance — brand colour drives the whole generated brand scale */
+  brandColor: text("brand_color").notNull().default("#cf4227"),
+  fontHeading: text("font_heading").notNull().default("Plus Jakarta Sans"),
+  fontBody: text("font_body").notNull().default("Source Serif 4"),
+  headingWeight: integer("heading_weight").notNull().default(800),
+  headingTracking: text("heading_tracking").notNull().default("-0.022em"),
+  bodyFontSize: real("body_font_size").notNull().default(1.1875),
+  bodyLineHeight: real("body_line_height").notNull().default(1.78),
+  h1Size: real("h1_size").notNull().default(2.75),
+  h2Size: real("h2_size").notNull().default(1.75),
+  h3Size: real("h3_size").notNull().default(1.3125),
+  h4Size: real("h4_size").notNull().default(1.125),
+
   /* SEO */
   metaTitleTemplate: text("meta_title_template").notNull().default("%s · %site%"),
   googleSiteVerification: text("google_site_verification"),
@@ -301,6 +334,19 @@ export const settings = sqliteTable("settings", {
   newsletterEnabled: integer("newsletter_enabled", { mode: "boolean" })
     .notNull()
     .default(true),
+
+  /* Outgoing email (SMTP) */
+  smtpHost: text("smtp_host"),
+  smtpPort: integer("smtp_port").notNull().default(587),
+  smtpSecure: integer("smtp_secure", { mode: "boolean" }).notNull().default(false),
+  smtpUser: text("smtp_user"),
+  smtpPassword: text("smtp_password"),
+  smtpFromName: text("smtp_from_name"),
+  smtpFromEmail: text("smtp_from_email"),
+  /** Email every subscriber automatically when a post is first published. */
+  notifyOnPublish: integer("notify_on_publish", { mode: "boolean" })
+    .notNull()
+    .default(false),
 
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(now),
 });
@@ -349,5 +395,6 @@ export type Post = typeof posts.$inferSelect;
 export type Page = typeof pages.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
 export type Subscriber = typeof subscribers.$inferSelect;
+export type Broadcast = typeof broadcasts.$inferSelect;
 export type Media = typeof media.$inferSelect;
 export type Settings = typeof settings.$inferSelect;

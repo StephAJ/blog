@@ -15,6 +15,7 @@ import {
   Heading3,
   ImagePlus,
   Italic,
+  LibraryBig,
   Link2,
   Link2Off,
   List,
@@ -30,6 +31,8 @@ import {
 import { useCallback, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
+
+import { MediaPicker } from "./media-picker";
 
 function ToolbarButton({
   onClick,
@@ -71,10 +74,12 @@ function Divider() {
 function Toolbar({
   editor,
   onUploadClick,
+  onLibraryClick,
   uploading,
 }: {
   editor: Editor;
   onUploadClick: () => void;
+  onLibraryClick: () => void;
   uploading: boolean;
 }) {
   const setLink = useCallback(() => {
@@ -186,8 +191,11 @@ function Toolbar({
       >
         <Link2Off size={15} />
       </ToolbarButton>
-      <ToolbarButton label="Insert image" onClick={onUploadClick} disabled={uploading}>
+      <ToolbarButton label="Upload an image" onClick={onUploadClick} disabled={uploading}>
         {uploading ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />}
+      </ToolbarButton>
+      <ToolbarButton label="Insert from media library" onClick={onLibraryClick}>
+        <LibraryBig size={15} />
       </ToolbarButton>
 
       <Divider />
@@ -247,6 +255,7 @@ export function RichEditor({
 }) {
   const [html, setHtml] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -315,6 +324,13 @@ export function RichEditor({
         editor={editor}
         uploading={uploading}
         onUploadClick={() => fileInput.current?.click()}
+        onLibraryClick={() => setLibraryOpen(true)}
+      />
+
+      <MediaPicker
+        open={libraryOpen}
+        onClose={() => setLibraryOpen(false)}
+        onSelect={(url) => editor.chain().focus().setImage({ src: url, alt: "" }).run()}
       />
 
       <input

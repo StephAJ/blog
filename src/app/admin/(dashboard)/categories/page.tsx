@@ -95,10 +95,11 @@ export default async function CategoriesPage({ searchParams }: Props) {
                             <input type="hidden" name="id" value={category.id} />
                             <SubmitButton
                               variant="danger"
-                              className="size-8 p-0"
+                              iconOnly
+                              title={`Delete ${category.name}`}
                               confirm={`Delete “${category.name}”? Its posts stay but become uncategorised.`}
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={15} />
                             </SubmitButton>
                           </form>
                         </div>

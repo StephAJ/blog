@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import Image from "next/image";
+import { SmartImage as Image } from "@/components/smart-image";
 import Link from "next/link";
 
 import { getCategoriesWithCounts, getFooterPages } from "@/db/queries";
